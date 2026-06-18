@@ -8,7 +8,7 @@ A production-grade market data system that aggregates live pricing from four ind
 
 **CSFloat** requires authentication and enforces a 200 request per hour rate limit. I extracted the JWT session token from an authenticated browser, then used curl\_cffi with Chrome 120 TLS fingerprint impersonation to bypass their JA3 fingerprint detection. I built a 12 hour caching layer that rotates through different sort orders and price ranges, reducing API usage by 96 percent. I also built a 700 entry name to ID lookup system that maps skin names to their internal identifiers.
 
-**Buff163** is the largest CS skin market by volume. I reverse engineered their internal website API by replicating the exact browser headers including sec-ch-ua client hints, x-requested-with XMLHttpRequest markers, and CSRF tokens extracted from the authenticated session. This bypasses their paid developer API tiers and provides access to 34,000 items with full order book depth and individual listing float values with no monthly rate limits.
+**Buff163** is the largest CS skin market by volume. I reverse engineered their internal website API by replicating the exact browser headers including sec-ch-ua client hints, x-requested-with XMLHttpRequest markers, and CSRF tokens extracted from the authenticated session. This bypasses their monthly rate limits and provides access to 34,000 items with full order book depth and individual listing float values.
 
 **Steam** provides public market data through their Community Market API, returning real time prices, 24 hour trading volume, and item search results.
 
