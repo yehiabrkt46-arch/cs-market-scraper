@@ -157,41 +157,39 @@ resp = requests.get("http://localhost:8080/bulk/items", params={
 })
 
 data = resp.json()
-
-
-
-
-
-\## Screenshots
-
-
-
-!\[API Endpoints](api\_endpoints.png)
-
-
-
-!\[Buff163 Search](buff163\_search.png)
-
-
-
-!\[Buff163 Floats](buff163\_floats.png)
-
-
-
-!\[Arbitrage](arbitrage.png)
-
-
-
-!\[Steam Search](steam\_search.png)
-
-
-
-!\[Steam Price](steam\_price.png)
-
-
-
-!\[Buff163 Browse](buff163\_browse.png)
 ```
+
+
+
+
+## Screenshots
+
+
+![API Endpoints](api\_endpoints.png)
+
+
+
+![Buff163 Search](buff163\_search.png)
+
+
+
+![Buff163 Floats](buff163\_floats.png)
+
+
+
+![Arbitrage](arbitrage.png)
+
+
+
+![Steam Search](steam\_search.png)
+
+
+
+![Steam Price](steam\_price.png)
+
+
+
+![Buff163 Browse](buff163\_browse.png)
 
 
 
