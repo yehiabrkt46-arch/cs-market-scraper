@@ -74,6 +74,212 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 
 
 
+\## Code Samples
+
+
+
+The system bypasses Cloudflare by launching an undetected browser, capturing authenticated session cookies, then transferring them to a TLS-impersonating HTTP client for fast API access:
+
+
+
+```python
+
+from seleniumbase import Driver
+
+from curl\_cffi import requests
+
+import time
+
+
+
+\# Launch undetected Chrome and bypass Cloudflare
+
+driver = Driver(uc=True, headless=True)
+
+driver.get("https://skinport.com/market")
+
+time.sleep(8)
+
+
+
+\# Capture authenticated session cookies
+
+cookies = {}
+
+for c in driver.get\_cookies():
+
+&#x20;   cookies\[c\['name']] = c\['value']
+
+
+
+\# Transfer session to curl\_cffi with Chrome TLS fingerprint
+
+resp = requests.get(
+
+&#x20;   "https://skinport.com/api/browse/730",
+
+&#x20;   params={"sort": "price", "order": "asc", "limit": 5},
+
+&#x20;   cookies=cookies,
+
+&#x20;   impersonate="chrome110"
+
+)
+
+
+
+items = resp.json().get("items", \[])
+
+
+
+
+
+
+
+The caching layer reduces rate-limited API usage by 96 percent:
+
+
+
+\# Check if price range was swept in the last 12 hours
+
+if db.is\_range\_cached(min\_price, max\_price, cache\_minutes=720):
+
+&#x20;   # Return cached data - zero API calls used
+
+&#x20;   return get\_cached\_listings(min\_price, max\_price)
+
+else:
+
+&#x20;   # Fresh fetch from CSFloat
+
+&#x20;   items = csfloat.get\_listings(
+
+&#x20;       min\_price=min\_price, 
+
+&#x20;       max\_price=max\_price,
+
+&#x20;       sort="price",
+
+&#x20;       order="asc"
+
+&#x20;   )
+
+&#x20;   cache\_listings(items)
+
+
+
+Buff163 requires Chinese authentication. The system reverse-engineers their internal API by replicating exact browser headers and CSRF tokens:
+
+
+
+```python
+
+from curl\_cffi import requests
+
+
+
+\# Exact headers captured from browser Network tab
+
+headers = {
+
+&#x20;   'accept': 'application/json, text/javascript, \*/\*; q=0.01',
+
+&#x20;   'referer': 'https://buff.163.com/market/csgo',
+
+&#x20;   'x-requested-with': 'XMLHttpRequest',
+
+&#x20;   'sec-ch-ua': '"Google Chrome";v="149", "Chromium";v="149"',
+
+}
+
+
+
+cookies = {
+
+&#x20;   'session': '1-3HpJXIT5oWZhYOdOor\_jdR...',
+
+&#x20;   'csrf\_token': 'IjdlODVjOTBiNTQ3MjNlMW...',
+
+}
+
+
+
+\# Access internal API - no monthly rate limits
+
+resp = requests.get(
+
+&#x20;   'https://buff.163.com/api/market/goods',
+
+&#x20;   params={'game': 'csgo', 'search': 'AK-47 Redline', 'page\_num': 1},
+
+&#x20;   headers=headers,
+
+&#x20;   cookies=cookies,
+
+&#x20;   impersonate='chrome120'
+
+)
+
+
+
+data = resp.json()
+
+\# Returns 34,000 items with supply/demand numbers
+
+items = data\['data']\['items']
+
+
+
+
+
+
+
+And this cross-market arbitrage sample:
+
+
+
+```markdown
+
+The arbitrage engine compares prices across all four markets in a single API call:
+
+
+
+```python
+
+\# One request returns prices from all markets
+
+resp = requests.get('http://localhost:8080/bulk/items', params={
+
+&#x20;   'skins': 'AK-47 | Redline (Field-Tested),AWP | Asiimov (Field-Tested)',
+
+&#x20;   'sources': 'skinport,steam,csfloat,buff163'
+
+})
+
+
+
+data = resp.json()
+
+
+
+for skin\_name, skin\_data in data\['results'].items():
+
+&#x20;   arb = skin\_data.get('arbitrage', {})
+
+&#x20;   if arb.get('profit\_percent', 0) > 50:
+
+&#x20;       print(f"Buy on {arb\['buy\_from']} for ${arb\['buy\_price']}")
+
+&#x20;       print(f"Sell on {arb\['sell\_to']} for ${arb\['sell\_price']}")
+
+&#x20;       print(f"Profit: {arb\['profit\_percent']}%")
+
+
+
+
+
+
+
 \## Screenshots
 
 
@@ -99,6 +305,24 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 \### Cross-Market Arbitrage - 391% profit detected
 
 !\[Arbitrage](arbitrage.png)
+
+
+
+\### Steam Search - Real-time market data
+
+!\[Steam Search](steam\_search.png)
+
+
+
+\### Steam Price Overview - Current price + 24h volume
+
+!\[Steam Price](steam\_price.png)
+
+
+
+\### Buff163 Browse - 34,000 items across 11,000 pages
+
+!\[Buff163 Browse](buff163\_browse.png)
 
 
 
