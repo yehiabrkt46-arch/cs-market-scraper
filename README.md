@@ -104,7 +104,7 @@ text
 
 **Internal API Access (Buff163)**
 
-Reverse-engineered Buff163's internal website API by capturing and replicating the exact browser headers their frontend sends, including sec-ch-ua client hints and x-requested-with markers. Extracted CSRF tokens from the authenticated session to bypass their paid developer API tiers, gaining access to 34,000 items with full order book depth and no monthly rate limits.
+Reverse-engineered Buff163's internal website API by capturing and replicating the exact browser headers their frontend sends, including sec-ch-ua client hints and x-requested-with markers. Extracted CSRF tokens from the authenticated session to get access to their internal API, gaining access to 34,000 items with full order book depth and no monthly rate limits.
 
 ```python
 
