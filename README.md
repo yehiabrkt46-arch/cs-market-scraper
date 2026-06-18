@@ -78,7 +78,13 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 
 
 
-The system bypasses Cloudflare by launching an undetected browser, capturing authenticated session cookies, then transferring them to a TLS-impersonating HTTP client for fast API access:
+\### Cloudflare Bypass \& Session Transfer (Skinport)
+
+
+
+The system launches an undetected browser to bypass Cloudflare's JavaScript challenges, captures authenticated session cookies, then transfers them to a TLS-impersonating HTTP client:
+
+
 
 
 
@@ -92,8 +98,6 @@ import time
 
 
 
-\# Launch undetected Chrome and bypass Cloudflare
-
 driver = Driver(uc=True, headless=True)
 
 driver.get("https://skinport.com/market")
@@ -102,8 +106,6 @@ time.sleep(8)
 
 
 
-\# Capture authenticated session cookies
-
 cookies = {}
 
 for c in driver.get\_cookies():
@@ -111,8 +113,6 @@ for c in driver.get\_cookies():
 &#x20;   cookies\[c\['name']] = c\['value']
 
 
-
-\# Transfer session to curl\_cffi with Chrome TLS fingerprint
 
 resp = requests.get(
 
@@ -130,27 +130,27 @@ resp = requests.get(
 
 items = resp.json().get("items", \[])
 
+&#x09;
+
+&#x09;
 
 
 
 
 
+Caching Layer (CSFloat)
 
-The caching layer reduces rate-limited API usage by 96 percent:
+A 12-hour SQLite cache with price range and sort order rotation reduces API usage by 96 percent:
 
 
 
-\# Check if price range was swept in the last 12 hours
+```python
 
 if db.is\_range\_cached(min\_price, max\_price, cache\_minutes=720):
-
-&#x20;   # Return cached data - zero API calls used
 
 &#x20;   return get\_cached\_listings(min\_price, max\_price)
 
 else:
-
-&#x20;   # Fresh fetch from CSFloat
 
 &#x20;   items = csfloat.get\_listings(
 
@@ -168,7 +168,13 @@ else:
 
 
 
-Buff163 requires Chinese authentication. The system reverse-engineers their internal API by replicating exact browser headers and CSRF tokens:
+
+
+Internal API Access (Buff163)
+
+Reverse-engineers Buff163's internal website API by replicating exact browser headers and CSRF tokens, bypassing their paid developer tiers:
+
+
 
 
 
@@ -177,8 +183,6 @@ Buff163 requires Chinese authentication. The system reverse-engineers their inte
 from curl\_cffi import requests
 
 
-
-\# Exact headers captured from browser Network tab
 
 headers = {
 
@@ -196,7 +200,7 @@ headers = {
 
 cookies = {
 
-&#x20;   'session': '1-3HpJXIT5oWZhYOdOor\_jdR...',
+&#x20;   'session': '1-3HpJXIT5oWZhYOdOor\_jdR1iQ...',
 
 &#x20;   'csrf\_token': 'IjdlODVjOTBiNTQ3MjNlMW...',
 
@@ -204,13 +208,11 @@ cookies = {
 
 
 
-\# Access internal API - no monthly rate limits
-
 resp = requests.get(
 
 &#x20;   'https://buff.163.com/api/market/goods',
 
-&#x20;   params={'game': 'csgo', 'search': 'AK-47 Redline', 'page\_num': 1},
+&#x20;   params={'game': 'csgo', 'search': 'AK-47 Redline'},
 
 &#x20;   headers=headers,
 
@@ -224,29 +226,21 @@ resp = requests.get(
 
 data = resp.json()
 
-\# Returns 34,000 items with supply/demand numbers
-
 items = data\['data']\['items']
 
 
 
 
 
+Cross-Market Arbitrage Engine
+
+One API call compares prices across all four markets and returns ranked profit opportunities:
 
 
-And this cross-market arbitrage sample:
-
-
-
-```markdown
-
-The arbitrage engine compares prices across all four markets in a single API call:
 
 
 
 ```python
-
-\# One request returns prices from all markets
 
 resp = requests.get('http://localhost:8080/bulk/items', params={
 
@@ -273,6 +267,12 @@ for skin\_name, skin\_data in data\['results'].items():
 &#x20;       print(f"Sell on {arb\['sell\_to']} for ${arb\['sell\_price']}")
 
 &#x20;       print(f"Profit: {arb\['profit\_percent']}%")
+
+
+
+
+
+
 
 
 
