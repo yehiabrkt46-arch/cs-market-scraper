@@ -50,6 +50,154 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 
 
 
+\## Code Samples
+
+
+
+\*\*Cloudflare Bypass (Skinport)\*\*
+
+
+
+Launches an undetected Chrome browser to bypass Cloudflare's JavaScript challenges and browser fingerprinting. Captures authenticated session cookies, then transfers them to a TLS-impersonating HTTP client for fast API access without browser overhead.
+
+python
+
+from seleniumbase import Driver
+
+from curl\_cffi import requests
+
+import time
+
+
+
+driver = Driver(uc=True, headless=True)
+
+driver.get("https://skinport.com/market")
+
+time.sleep(8)
+
+
+
+cookies = {}
+
+for c in driver.get\_cookies():
+
+&#x20;   cookies\[c\["name"]] = c\["value"]
+
+
+
+resp = requests.get(
+
+&#x20;   "https://skinport.com/api/browse/730",
+
+&#x20;   params={"sort": "price", "order": "asc", "limit": 5},
+
+&#x20;   cookies=cookies,
+
+&#x20;   impersonate="chrome110"
+
+)
+
+text
+
+
+
+\*\*Intelligent Caching (CSFloat)\*\*
+
+
+
+A 12-hour SQLite cache with price range and sort order rotation. Once a price bracket is swept, subsequent requests return from the database with zero API calls. This single optimization reduced CSFloat API usage from 150 calls per cycle to just 6, a 96 percent reduction.
+
+python
+
+if db.is\_range\_cached(min\_price, max\_price, cache\_minutes=720):
+
+&#x20;   return get\_cached\_listings(min\_price, max\_price)
+
+else:
+
+&#x20;   items = csfloat.get\_listings(
+
+&#x20;       min\_price=min\_price,
+
+&#x20;       max\_price=max\_price,
+
+&#x20;       sort="price",
+
+&#x20;       order="asc"
+
+&#x20;   )
+
+&#x20;   cache\_listings(items)
+
+text
+
+
+
+\*\*Internal API Access (Buff163)\*\*
+
+
+
+Reverse-engineered Buff163's internal website API by capturing and replicating the exact browser headers their frontend sends, including sec-ch-ua client hints and x-requested-with markers. Extracted CSRF tokens from the authenticated session to bypass their paid developer API tiers, gaining access to 34,000 items with full order book depth and no monthly rate limits.
+
+python
+
+from curl\_cffi import requests
+
+
+
+headers = {
+
+&#x20;   "accept": "application/json",
+
+&#x20;   "referer": "https://buff.163.com/market/csgo",
+
+&#x20;   "x-requested-with": "XMLHttpRequest",
+
+}
+
+
+
+resp = requests.get(
+
+&#x20;   "https://buff.163.com/api/market/goods",
+
+&#x20;   params={"game": "csgo", "search": "AK-47 Redline"},
+
+&#x20;   headers=headers,
+
+&#x20;   cookies=cookies,
+
+&#x20;   impersonate="chrome120"
+
+)
+
+text
+
+
+
+\*\*Cross-Market Arbitrage Engine\*\*
+
+
+
+A single API call compares prices across all four markets and returns ranked profit opportunities. The system automatically calculates profit margins and identifies which market to buy from and which to sell on.
+
+python
+
+resp = requests.get("http://localhost:8080/bulk/items", params={
+
+&#x20;   "skins": "AK-47 | Redline (Field-Tested)",
+
+&#x20;   "sources": "skinport,steam,csfloat,buff163"
+
+})
+
+data = resp.json()
+
+
+
+
+
 \## Screenshots
 
 
