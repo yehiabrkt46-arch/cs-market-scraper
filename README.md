@@ -54,10 +54,6 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 
 
 
-\## Screenshots
-
-
-
 !\[API Endpoints](api\_endpoints.png)
 
 
@@ -83,6 +79,10 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 
 
 !\[Buff163 Browse](buff163\_browse.png)
+
+
+
+
 
 
 
