@@ -50,7 +50,7 @@ One of the trickiest problems was ensuring honest float to price pairing. CSFloa
 
 
 
-All market data flows into a local REST server running on port 8080 with over 25 endpoints. The bulk items endpoint fetches prices from all four markets for multiple skins in a single request. Trade up discovery endpoints find viable collections, return input items sorted by lowest float, and check what the output item sells for. The arbitrage endpoint scans the entire watchlist and ranks opportunities by profit percentage. Float analysis tells you how rare a specific wear value is within its range. The CSFloat sweep endpoint uses the caching system to return hundreds of skins with real float and price data.
+All market data flows into a local REST server running on port 8080 with over 30 endpoints. The bulk items endpoint fetches prices from all four markets for multiple skins in a single request. Trade up discovery endpoints find viable collections, return input items sorted by lowest float, and check what the output item sells for. The arbitrage endpoint scans the entire watchlist and ranks opportunities by profit percentage. Float analysis tells you how rare a specific wear value is within its range. The CSFloat sweep endpoint uses the caching system to return hundreds of skins with real float and price data.
 
 
 
@@ -64,13 +64,13 @@ Everything is accessible through simple GET requests, making it easy for any tra
 
 Python 3.14, SeleniumBase for undetected Chrome automation, curl\_cffi for TLS fingerprint impersonation, SQLite for local caching, and Python's built in HTTP server for the REST API. The system handles Cloudflare bypass, JWT session authentication, CSRF token extraction, browser header spoofing, and intelligent rate limit management.
 
-S
+
 
 \## Key Results
 
 
 
-The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Tested, priced at 8 dollars and 18 cents on CSFloat versus 42 dollars and 67 cents on Steam. API calls to CSFloat were reduced by 96 percent through caching. Four separate markets were unified under a single API where most competitors access only one or two. The entire system runs without any paid API subscriptions, all data extracted from internal website endpoints that standard HTTP libraries cannot reach.
+The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Tested, priced at 8 dollars and 68 cents on CSFloat versus 42 dollars and 70 cents on Steam. API calls to CSFloat were reduced by 96 percent through caching. Four separate markets were unified under a single API where most competitors access only one or two. The entire system runs without any paid API subscriptions, all data extracted from internal website endpoints that standard HTTP libraries cannot reach.
 
 
 
@@ -78,17 +78,11 @@ The system found a 421 percent arbitrage opportunity on AK-47 Redline Field Test
 
 
 
-\### Cloudflare Bypass \& Session Transfer (Skinport)
+\### Cloudflare Bypass and Session Transfer
 
 
 
-The system launches an undetected browser to bypass Cloudflare's JavaScript challenges, captures authenticated session cookies, then transfers them to a TLS-impersonating HTTP client:
-
-
-
-
-
-```python
+The system launches an undetected browser to bypass Cloudflare challenges, captures authenticated session cookies, then transfers them to a TLS-impersonating HTTP client:
 
 from seleniumbase import Driver
 
@@ -110,19 +104,19 @@ cookies = {}
 
 for c in driver.get\_cookies():
 
-&#x20;   cookies\[c\['name']] = c\['value']
+cookies\[c\["name"]] = c\["value"]
 
 
 
 resp = requests.get(
 
-&#x20;   "https://skinport.com/api/browse/730",
+"https://skinport.com/api/browse/730",
 
-&#x20;   params={"sort": "price", "order": "asc", "limit": 5},
+params={"sort": "price", "order": "asc", "limit": 5},
 
-&#x20;   cookies=cookies,
+cookies=cookies,
 
-&#x20;   impersonate="chrome110"
+impersonate="chrome110"
 
 )
 
@@ -130,55 +124,49 @@ resp = requests.get(
 
 items = resp.json().get("items", \[])
 
-&#x09;
-
-&#x09;
 
 
+text
 
 
 
-Caching Layer (CSFloat)
-
-A 12-hour SQLite cache with price range and sort order rotation reduces API usage by 96 percent:
+\### Intelligent Caching Layer
 
 
 
-```python
+A 12-hour SQLite cache with price range rotation reduces API usage by 96 percent:
 
 if db.is\_range\_cached(min\_price, max\_price, cache\_minutes=720):
 
-&#x20;   return get\_cached\_listings(min\_price, max\_price)
+return get\_cached\_listings(min\_price, max\_price)
 
 else:
 
-&#x20;   items = csfloat.get\_listings(
+items = csfloat.get\_listings(
 
-&#x20;       min\_price=min\_price, 
+min\_price=min\_price,
 
-&#x20;       max\_price=max\_price,
+max\_price=max\_price,
 
-&#x20;       sort="price",
+sort="price",
 
-&#x20;       order="asc"
+order="asc"
 
-&#x20;   )
+)
 
-&#x20;   cache\_listings(items)
-
-
+cache\_listings(items)
 
 
 
-Internal API Access (Buff163)
-
-Reverse-engineers Buff163's internal website API by replicating exact browser headers and CSRF tokens, bypassing their paid developer tiers:
+text
 
 
 
+\### Internal API Access
 
 
-```python
+
+Reverse-engineers Buff163's internal website API by replicating exact browser headers and CSRF tokens:
 
 from curl\_cffi import requests
 
@@ -186,13 +174,13 @@ from curl\_cffi import requests
 
 headers = {
 
-&#x20;   'accept': 'application/json, text/javascript, \*/\*; q=0.01',
+"accept": "application/json, text/javascript, \*/\*; q=0.01",
 
-&#x20;   'referer': 'https://buff.163.com/market/csgo',
+"referer": "https://buff.163.com/market/csgo",
 
-&#x20;   'x-requested-with': 'XMLHttpRequest',
+"x-requested-with": "XMLHttpRequest",
 
-&#x20;   'sec-ch-ua': '"Google Chrome";v="149", "Chromium";v="149"',
+"sec-ch-ua": ""Google Chrome";v="149", "Chromium";v="149"",
 
 }
 
@@ -200,9 +188,9 @@ headers = {
 
 cookies = {
 
-&#x20;   'session': '1-3HpJXIT5oWZhYOdOor\_jdR1iQ...',
+"session": "1-3HpJXIT5oWZhYOdOor\_jdR1iQ...",
 
-&#x20;   'csrf\_token': 'IjdlODVjOTBiNTQ3MjNlMW...',
+"csrf\_token": "IjdlODVjOTBiNTQ3MjNlMW...",
 
 }
 
@@ -210,15 +198,15 @@ cookies = {
 
 resp = requests.get(
 
-&#x20;   'https://buff.163.com/api/market/goods',
+"https://buff.163.com/api/market/goods",
 
-&#x20;   params={'game': 'csgo', 'search': 'AK-47 Redline'},
+params={"game": "csgo", "search": "AK-47 Redline"},
 
-&#x20;   headers=headers,
+headers=headers,
 
-&#x20;   cookies=cookies,
+cookies=cookies,
 
-&#x20;   impersonate='chrome120'
+impersonate="chrome120"
 
 )
 
@@ -226,27 +214,25 @@ resp = requests.get(
 
 data = resp.json()
 
-items = data\['data']\['items']
+items = data\["data"]\["items"]
 
 
 
-
-
-Cross-Market Arbitrage Engine
-
-One API call compares prices across all four markets and returns ranked profit opportunities:
+text
 
 
 
+\### Cross-Market Arbitrage Engine
 
 
-```python
 
-resp = requests.get('http://localhost:8080/bulk/items', params={
+One API call compares prices across all four markets:
 
-&#x20;   'skins': 'AK-47 | Redline (Field-Tested),AWP | Asiimov (Field-Tested)',
+resp = requests.get("http://localhost:8080/bulk/items", params={
 
-&#x20;   'sources': 'skinport,steam,csfloat,buff163'
+"skins": "AK-47 | Redline (Field-Tested),AWP | Asiimov (Field-Tested)",
+
+"sources": "skinport,steam,csfloat,buff163"
 
 })
 
@@ -256,27 +242,143 @@ data = resp.json()
 
 
 
-for skin\_name, skin\_data in data\['results'].items():
+for skin\_name, skin\_data in data\["results"].items():
 
-&#x20;   arb = skin\_data.get('arbitrage', {})
+arb = skin\_data.get("arbitrage", {})
 
-&#x20;   if arb.get('profit\_percent', 0) > 50:
+if arb.get("profit\_percent", 0) > 50:
 
-&#x20;       print(f"Buy on {arb\['buy\_from']} for ${arb\['buy\_price']}")
+print(f"Buy on {arb\['buy\_from']} for 
 
-&#x20;       print(f"Sell on {arb\['sell\_to']} for ${arb\['sell\_price']}")
+a
 
-&#x20;       print(f"Profit: {arb\['profit\_percent']}%")
+r
+
+b
+
+\[
+
+′
+
+b
+
+u
+
+y
+
+p
+
+r
+
+i
+
+c
+
+e
+
+′
+
+]
+
+"
+
+)
+
+p
+
+r
+
+i
+
+n
+
+t
+
+(
+
+f
+
+"
+
+S
+
+e
+
+l
+
+l
+
+o
+
+n
+
+a
+
+r
+
+b
+
+\[
+
+′
+
+s
+
+e
+
+l
+
+l
+
+t
+
+o
+
+′
+
+]
+
+f
+
+o
+
+r
+
+arb\[ 
+
+′
+
+&#x20;buy 
+
+p
+
+​
+
+&#x20;rice 
+
+′
+
+&#x20;]")print(f"Sellonarb\[ 
+
+′
+
+&#x20;sell 
+
+t
+
+​
+
+&#x20;o 
+
+′
+
+&#x20;]for{arb\['sell\_price']}")
+
+print(f"Profit: {arb\['profit\_percent']}%")
 
 
 
-
-
-
-
-
-
-
+text
 
 
 
@@ -284,7 +386,7 @@ for skin\_name, skin\_data in data\['results'].items():
 
 
 
-\### API Endpoints (30+ routes across 4 markets)
+\### API Endpoints - 30+ routes across 4 markets
 
 !\[API Endpoints](api\_endpoints.png)
 
@@ -335,4 +437,6 @@ Available upon request for verified recruiters and hiring managers.
 
 
 Contact: yehiabrkt46@gmail.com
+
+
 
